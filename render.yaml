@@ -4,25 +4,26 @@ services:
     runtime: python
     plan: free
     region: frankfurt
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input"
-    preDeployCommand: "python manage.py migrate --no-input"
+    # Free instances cannot use preDeployCommand, so migrations run in the build.
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate --no-input"
     startCommand: "gunicorn bdmis.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 60"
-    healthCheckPath: /
+    healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.7"
       - key: DJANGO_SETTINGS_MODULE
-        value: bdmis.settings.development
+        value: bdmis.settings.production
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: "True"
+        value: "False"
       - key: ALLOWED_HOSTS
         sync: false
       - key: SITE_URL
         sync: false
       - key: CSRF_TRUSTED_ORIGINS
         sync: false
+      # Pick the Neon branch here: paste the dev or main connection string.
       - key: DATABASE_URL
         sync: false
       - key: EMAIL_HOST
@@ -49,7 +50,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.7"
       - key: DJANGO_SETTINGS_MODULE
-        value: bdmis.settings.development
+        value: bdmis.settings.production
       - key: SECRET_KEY
         sync: false
       - key: ALLOWED_HOSTS

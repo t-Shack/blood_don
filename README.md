@@ -62,6 +62,19 @@ PgBouncer, which cannot execute `CREATE DATABASE`, so a test run against a poole
 host would hang with no error message; `settings/base.py` detects `test` in `argv`
 and swaps to the direct endpoint automatically.
 
+### Render
+
+Always run Render with `DJANGO_SETTINGS_MODULE=bdmis.settings.production`, even when
+the site uses the Neon `dev` branch. The branch is chosen only by `DATABASE_URL`.
+`bdmis.settings.development` allows only `localhost`, so on Render every page returns
+400 Bad Request.
+
+* `ALLOWED_HOSTS` takes bare hostnames (`blood-don-f9c4.onrender.com`). Render's own
+  hostname is added automatically, and a pasted `https://` prefix is stripped.
+* The health check path is `/healthz`. It answers before the host check and never
+  touches the database.
+* Free instances cannot run a pre-deploy command, so `migrate` runs in the build.
+
 ### Gmail SMTP
 
 `EMAIL_HOST_PASSWORD` must be a **Gmail App Password**, not the account password:

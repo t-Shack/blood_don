@@ -80,3 +80,19 @@ class RegressionTests(TestCase):
         }, user=self.staff)
         self.assertFalse(form.is_valid())
         self.assertIn('units_donated', form.errors)
+
+
+class DeploymentTests(TestCase):
+    """The Render deploy returned 400 Bad Request for every page."""
+
+    def test_health_check_ignores_host_and_database(self):
+        # Render's checker may send an internal Host header over plain http.
+        response = self.client.get('/healthz', HTTP_HOST='10.0.0.5:10000')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'ok')
+
+    def test_production_strips_scheme_from_allowed_hosts(self):
+        from bdmis.settings.production import _bare_host
+        self.assertEqual(_bare_host('https://blood-don-f9c4.onrender.com/'),
+                         'blood-don-f9c4.onrender.com')
+        self.assertEqual(_bare_host(' localhost '), 'localhost')
