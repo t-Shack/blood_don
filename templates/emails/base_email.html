@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block subject %}BDMIS{% endblock %}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F4F4F1; font-family:'Archivo',Helvetica,Arial,sans-serif; color:#16171A;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4F4F1; padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="max-width:560px; background-color:#FCFCFB; border:1px solid #DEDED9; border-radius:12px; overflow:hidden;">
+
+          <tr>
+            <td style="background-color:#16171A; padding:24px 32px;">
+              <span style="display:inline-block; width:10px; height:10px; margin-right:8px; border-radius:2px; background-color:#B21F2C;"></span><span style="color:#FCFCFB; font-size:18px; font-weight:700; letter-spacing:-0.01em;">BDMIS</span>
+              <div style="color:#BDB8B5; font-size:12px; margin-top:4px;">
+                Blood Donor Management Information System
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:20px 32px; background-color:#F4F4F1; border-top:1px solid #DEDED9;">
+              <p style="margin:0; font-size:12px; line-height:1.6; color:#4E5157;">
+                {% block footer %}
+                  You are receiving this because you registered as a blood donor with BDMIS.
+                {% endblock %}
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

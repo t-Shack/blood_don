@@ -1,0 +1,26 @@
+{% load icons %}
+<div class="form-group{% if field.errors %} has-error{% endif %}{% if field.field.widget.input_type == 'checkbox' %} form-group-check{% endif %}">
+  {% if field.field.widget.input_type == 'checkbox' %}
+    <div class="form-check">
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    </div>
+  {% else %}
+    <label for="{{ field.id_for_label }}">
+      {{ field.label }}{% if field.field.required %}<span class="required-mark" aria-hidden="true">*</span>{% endif %}
+    </label>
+    {% if field.field.widget.input_type == 'password' %}
+      <div class="password-field">
+        {{ field }}
+        <button class="password-toggle" type="button" data-password-toggle
+                aria-label="Show password" aria-pressed="false">
+          {% icon "eye" css_class="icon-eye" %}{% icon "eye-slash" css_class="icon-eye-off" %}
+        </button>
+      </div>
+    {% else %}
+      {{ field }}
+    {% endif %}
+  {% endif %}
+  {% if field.help_text %}<span class="help-text">{{ field.help_text }}</span>{% endif %}
+  {% for error in field.errors %}<p class="field-error">{% icon "warning" %}<span>{{ error }}</span></p>{% endfor %}
+</div>

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load icons %}
+{% block title %}Record a donation{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>Record a donation</h1>
+  <p class="lede">
+    Saving this moves the donor's eligibility date forward and adds the units to the hospital's
+    stock for that blood type, in one transaction.
+  </p>
+</header>
+
+<div class="split">
+  <form class="panel form form-wide" method="post" novalidate>
+    {% csrf_token %}
+    {% include 'core/_form_field.html' with field=form.donor %}
+    {% include 'core/_form_field.html' with field=form.hospital %}
+    <div class="form-row">
+      {% include 'core/_form_field.html' with field=form.donation_date %}
+      {% include 'core/_form_field.html' with field=form.units_donated %}
+    </div>
+    {% include 'core/_form_field.html' with field=form.blood_request %}
+    {% include 'core/_form_field.html' with field=form.notes %}
+    <div class="form-actions">
+      <button class="btn btn-primary btn-responsive" type="submit" data-loading-label="Recording…">Record donation</button>
+      <a class="btn btn-ghost btn-responsive" href="{% url 'donations:list' %}">View history</a>
+    </div>
+  </form>
+
+  <aside class="sticky-aside">
+    <div class="alert alert-amber">
+      {% icon "timer" %}
+      <p><strong>The {{ DONATION_INTERVAL_DAYS }}-day rule.</strong> This form rejects a donor who is still inside their interval, and the error message gives their next eligible date.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

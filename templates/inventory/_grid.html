@@ -1,0 +1,42 @@
+{% load icons ui %}
+<section class="panel" data-inventory-url="{% url 'api:hospital_inventory' hospital.pk %}" aria-labelledby="inventory-title">
+  <div class="panel-head">
+    <div>
+      <h2 class="panel-title" id="inventory-title">Blood inventory</h2>
+      <p class="last-updated mb-0 mt-16">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span>Updated <span data-timestamp="{% if inventory %}{{ inventory.0.last_updated.isoformat }}{% endif %}">just now</span></span>
+      </p>
+    </div>
+    <div class="cluster">
+      <span class="badge badge-outline"><span data-total-units>{{ hospital.total_units }}</span>&nbsp;units in total</span>
+      <button class="btn btn-secondary btn-sm" type="button" data-refresh-now>{% icon "arrows-clockwise" %} Refresh</button>
+    </div>
+  </div>
+
+  <div class="inventory-grid">
+    {% for item in inventory %}
+      <div class="inventory-cell" data-blood-type="{{ item.full_blood_type }}" data-status="{{ item.status }}">
+        <div class="inventory-cell-head">
+          <span class="inventory-type">{{ item.full_blood_type|rh }}</span>
+          <span class="tiny muted">Threshold {{ item.critical_threshold }}</span>
+        </div>
+        <div>
+          <span class="inventory-units" data-units="{{ item.available_units }}">{{ item.available_units }}</span>
+          <span class="inventory-units-label">units</span>
+        </div>
+        <div class="inventory-bar" aria-hidden="true">
+          <div class="inventory-bar-fill" data-status="{{ item.status }}" style="width: {{ item.fill_percentage }}%"></div>
+        </div>
+        <span class="inventory-status badge {% if item.status == 'critical' %}badge-red{% elif item.status == 'low' %}badge-amber{% else %}badge-green{% endif %}" data-status-label>{{ item.status_label }}</span>
+      </div>
+    {% empty %}
+      <p class="muted inventory-empty">No inventory rows exist for this hospital yet.</p>
+    {% endfor %}
+  </div>
+
+  <div class="inventory-foot">
+    <span>Updates automatically every {{ INVENTORY_POLL_INTERVAL_SECONDS }} seconds. A type is critical when it falls below this hospital's threshold for it.</span>
+    {% include 'inventory/_legend.html' %}
+  </div>
+</section>

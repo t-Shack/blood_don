@@ -1,0 +1,51 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons ui %}
+{% block admin_title %}Notification log{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <h1>Notification log</h1>
+  <p class="lede">Every donor alert the system has attempted to send.</p>
+  <div class="cluster page-head-meta">
+    <span class="badge badge-green">{{ sent_count }} sent</span>
+    <span class="badge {% if failed_count %}badge-red{% else %}badge-neutral{% endif %}">{{ failed_count }} failed</span>
+  </div>
+</header>
+
+<form class="filter-bar" method="get" data-autosubmit>
+  <div class="form-group">
+    <label for="status">Delivery</label>
+    <select id="status" name="status">
+      <option value="">All</option>
+      <option value="sent" {% if selected_status == 'sent' %}selected{% endif %}>Sent</option>
+      <option value="failed" {% if selected_status == 'failed' %}selected{% endif %}>Failed</option>
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button class="btn btn-secondary" type="submit">Apply</button>
+    <a class="btn btn-ghost" href="{% url 'core:admin_notifications' %}">Clear</a>
+  </div>
+</form>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th scope="col">Sent</th><th scope="col">Donor</th><th scope="col">Type</th><th scope="col">Request</th><th scope="col">Delivery</th></tr>
+    </thead>
+    <tbody>
+      {% for note in notifications %}
+        <tr>
+          <td class="nowrap"><span data-timestamp="{{ note.sent_at.isoformat }}">{{ note.sent_at|date:'j M H:i' }}</span></td>
+          <td><span class="cell-main">{{ note.donor.user.get_full_name }}</span><span class="cell-sub">{{ note.donor.user.email }}</span></td>
+          <td><span class="blood-badge">{{ note.donor.full_blood_type|rh }}</span></td>
+          <td><a href="{{ note.blood_request.get_absolute_url }}">#{{ note.blood_request.pk }}, {{ note.blood_request.hospital.name }}</a></td>
+          <td><span class="badge {% if note.status == 'sent' %}badge-green{% else %}badge-red{% endif %}">{{ note.get_status_display }}</span></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="table-empty">No notifications logged yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'core/_pagination.html' %}
+{% endblock %}

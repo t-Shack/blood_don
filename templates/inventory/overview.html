@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static icons ui %}
+{% block title %}Blood inventory across all hospitals{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>Blood inventory</h1>
+  <p class="lede">
+    Live stock for every registered blood bank, by blood type. Figures refresh every
+    {{ INVENTORY_POLL_INTERVAL_SECONDS }} seconds without reloading the page.
+  </p>
+</header>
+
+<div class="toolbar">
+  <form class="cluster" method="get" data-autosubmit>
+    <label class="visually-hidden" for="state">State</label>
+    <select id="state" name="state">
+      <option value="">All states</option>
+      {% for state in states %}
+        <option value="{{ state }}" {% if state == selected_state %}selected{% endif %}>{{ state }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button class="btn btn-secondary" type="submit">Apply</button></noscript>
+  </form>
+  {% if shortage_count %}
+    <span class="badge badge-red">{% icon "warning" %} {{ shortage_count }} critical shortage{{ shortage_count|pluralize }} across hospitals</span>
+  {% else %}
+    <span class="badge badge-green">{% icon "check-circle" %} No critical shortages</span>
+  {% endif %}
+</div>
+
+<section class="section" aria-labelledby="totals-title">
+  <div class="section-head">
+    <h2 class="section-title" id="totals-title">Totals by blood type</h2>
+  </div>
+  <div class="inventory-grid">
+    {% for type_label, units in totals.items %}
+      <div class="inventory-cell" data-status="{% if units == 0 %}critical{% elif units < 20 %}low{% else %}sufficient{% endif %}">
+        <div class="inventory-cell-head"><span class="inventory-type">{{ type_label|rh }}</span></div>
+        <div><span class="inventory-units">{{ units }}</span><span class="inventory-units-label">units</span></div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section" aria-labelledby="matrix-title">
+  <div class="section-head">
+    <h2 class="section-title" id="matrix-title">By hospital</h2>
+    {% include 'inventory/_legend.html' %}
+  </div>
+  {% if rows %}
+    <div class="table-wrap">
+      <table class="table matrix-table">
+        <thead>
+          <tr>
+            <th scope="col">Hospital</th>
+            {% for label in blood_types %}<th scope="col" class="type-col">{{ label|rh }}</th>{% endfor %}
+            <th scope="col" class="num">Total</th>
+            <th scope="col"><span class="visually-hidden">Details</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr data-inventory-url="{% url 'api:hospital_inventory' row.hospital.pk %}">
+              <td>
+                <a class="cell-main" href="{{ row.hospital.get_absolute_url }}">{{ row.hospital.name }}</a>
+                <span class="cell-sub">{{ row.hospital.city }}, {{ row.hospital.state }}</span>
+              </td>
+              {% for cell in row.cells %}
+                {% if cell %}
+                  <td class="matrix-cell" data-blood-type="{{ cell.full_blood_type }}" data-status="{{ cell.status }}">
+                    <span data-units="{{ cell.available_units }}">{{ cell.available_units }}</span>
+                  </td>
+                {% else %}
+                  <td class="center muted"><span aria-hidden="true">-</span><span class="visually-hidden">No record</span></td>
+                {% endif %}
+              {% endfor %}
+              <td class="num strong"><span data-total-units>{{ row.total_units }}</span></td>
+              <td class="cell-actions"><a class="table-link" href="{% url 'hospitals:inventory' row.hospital.pk %}">Details {% icon "arrow-right" %}</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="last-updated mt-16">
+      <span class="live-dot" aria-hidden="true"></span>
+      Refreshing automatically every {{ INVENTORY_POLL_INTERVAL_SECONDS }} seconds
+    </p>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">{% icon "flask" %}</div>
+      <h2>No blood banks in this view</h2>
+      <p>No hospital with a blood bank is registered for that state yet.</p>
+      <a class="btn btn-secondary" href="{% url 'inventory:overview' %}">Show every state</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/inventory.js' %}"></script>
+{% endblock %}

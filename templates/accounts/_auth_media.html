@@ -1,0 +1,10 @@
+{% load static %}
+<figure class="auth-media">
+  <picture>
+    <source type="image/webp" sizes="(max-width: 900px) 1px, 42vw"
+            srcset="{% static 'img/blood-unit-600.webp' %} 600w, {% static 'img/blood-unit-1000.webp' %} 1000w">
+    <img src="{% static 'img/blood-unit-800.jpg' %}" width="800" height="1173" loading="lazy"
+         alt="A gloved hand holds a labelled unit of red blood cells from a volunteer donor.">
+  </picture>
+  <figcaption>Every unit on the shelf started with a volunteer.</figcaption>
+</figure>

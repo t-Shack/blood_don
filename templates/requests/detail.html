@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load icons ui %}
+{% block title %}Request #{{ blood_request.pk }}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <a class="back-link" href="{% url 'requests:list' %}">{% icon "arrow-left" %} All requests</a>
+  <div class="page-head-row">
+    <h1>Request #{{ blood_request.pk }}</h1>
+    <div class="cluster">
+      <span class="badge {% if blood_request.urgency_level == 'critical' %}badge-red{% elif blood_request.urgency_level == 'medium' %}badge-amber{% else %}badge-neutral{% endif %}">
+        {{ blood_request.get_urgency_level_display }} urgency
+      </span>
+      <span class="badge {% if blood_request.status == 'fulfilled' %}badge-green{% elif blood_request.status == 'pending' %}badge-amber{% else %}badge-neutral{% endif %}">
+        {{ blood_request.get_status_display }}
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="split section">
+  <section class="panel" aria-labelledby="request-title">
+    <h2 class="visually-hidden" id="request-title">Request details</h2>
+    <div class="request-type">
+      <span class="blood-badge blood-badge-lg">{{ blood_request.full_blood_type|rh }}</span>
+      <div>
+        <p>Outstanding</p>
+        <strong{% if blood_request.units_outstanding %} class="text-red"{% endif %}>{{ blood_request.units_outstanding }} of {{ blood_request.quantity_needed }} units</strong>
+      </div>
+    </div>
+    <div class="meter" aria-hidden="true">
+      <div class="meter-fill"{% if not blood_request.units_outstanding %} data-status="done"{% endif %} style="width: {% widthratio blood_request.units_fulfilled blood_request.quantity_needed 100 %}%"></div>
+    </div>
+    <div class="meter-caption"><span>{{ blood_request.units_fulfilled }} released</span><span>{{ blood_request.quantity_needed }} needed</span></div>
+
+    <dl class="definition-list mt-32">
+      <dt>Hospital</dt><dd><a href="{{ blood_request.hospital.get_absolute_url }}">{{ blood_request.hospital.name }}</a></dd>
+      {% if blood_request.patient_name %}<dt>Patient</dt><dd>{{ blood_request.patient_name }}</dd>{% endif %}
+      <dt>Raised by</dt><dd>{{ blood_request.requested_by.get_full_name }}</dd>
+      <dt>Raised</dt><dd><span data-timestamp="{{ blood_request.created_at.isoformat }}">{{ blood_request.created_at|date:'j M Y H:i' }}</span> <span class="muted">({{ blood_request.created_at|date:'j M Y, H:i' }})</span></dd>
+    </dl>
+    {% if blood_request.notes %}
+      <hr class="panel-divider">
+      <h3 class="small strong">Notes</h3>
+      <p class="muted mb-0">{{ blood_request.notes }}</p>
+    {% endif %}
+  </section>
+
+  <aside class="stack">
+    <section class="panel" aria-labelledby="stock-title">
+      <h2 class="panel-title mb-24" id="stock-title">Stock at this hospital</h2>
+      {% if inventory %}
+        <div class="capacity">
+          <div class="capacity-figures">
+            <span><strong>{{ inventory.available_units }}</strong> units of {{ inventory.full_blood_type|rh }}</span>
+            <span>Threshold {{ inventory.critical_threshold }}</span>
+          </div>
+          <div class="meter" aria-hidden="true"><div class="meter-fill" data-status="{{ inventory.status }}" style="width: {{ inventory.fill_percentage }}%"></div></div>
+        </div>
+      {% else %}
+        <p class="muted mb-0">No inventory row exists for this type at this hospital.</p>
+      {% endif %}
+
+      {% if blood_request.is_open %}
+        <div class="action-block mt-24">
+          <form method="post" action="{% url 'requests:fulfil' blood_request.pk %}">
+            {% csrf_token %}
+            {% include 'core/_form_field.html' with field=fulfil_form.units_fulfilled %}
+            <button class="btn btn-primary btn-block" type="submit" data-loading-label="Releasing…">Release from stock</button>
+          </form>
+        </div>
+        <div class="action-block">
+          <form method="post" action="{% url 'requests:cancel' blood_request.pk %}"
+                data-confirm="Cancel this request? Donors already alerted will not be notified again.">
+            {% csrf_token %}
+            <button class="btn btn-danger btn-sm" type="submit" data-loading-label="Cancelling…">Cancel request</button>
+          </form>
+        </div>
+      {% endif %}
+    </section>
+
+    <section class="panel" aria-labelledby="compat-title">
+      <h2 class="panel-title mb-24" id="compat-title">Compatible donor types</h2>
+      <div class="cluster">
+        {% for type_label in compatible_types %}<span class="blood-badge">{{ type_label|rh }}</span>{% endfor %}
+      </div>
+      <p class="panel-note">Strict ABO and rhesus compatibility for a {{ blood_request.full_blood_type|rh }} recipient.</p>
+    </section>
+  </aside>
+</div>
+
+<section class="section" aria-labelledby="donations-title">
+  <div class="section-head"><h2 class="section-title" id="donations-title">Donations against this request</h2></div>
+  {% if donations %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th scope="col">Date</th><th scope="col">Donor</th><th scope="col">Type</th><th scope="col" class="num">Units</th></tr></thead>
+        <tbody>
+          {% for donation in donations %}
+            <tr>
+              <td class="nowrap">{{ donation.donation_date|date:'j M Y' }}</td>
+              <td class="cell-main">{{ donation.donor.user.get_full_name }}</td>
+              <td><span class="blood-badge">{{ donation.blood_type|rh }}</span></td>
+              <td class="num">{{ donation.units_donated }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">No donations have been recorded against this request yet.</p>
+  {% endif %}
+</section>
+
+<section class="section" aria-labelledby="alerts-title">
+  <div class="section-head"><h2 class="section-title" id="alerts-title">Donor alerts sent</h2></div>
+  {% if notifications %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th scope="col">Sent</th><th scope="col">Donor</th><th scope="col">Type</th><th scope="col">Delivery</th></tr></thead>
+        <tbody>
+          {% for note in notifications %}
+            <tr>
+              <td class="nowrap"><span data-timestamp="{{ note.sent_at.isoformat }}">{{ note.sent_at|date:'j M H:i' }}</span></td>
+              <td class="cell-main">{{ note.donor.user.get_full_name }}</td>
+              <td><span class="blood-badge">{{ note.donor.full_blood_type|rh }}</span></td>
+              <td><span class="badge {% if note.status == 'sent' %}badge-green{% else %}badge-red{% endif %}">{{ note.get_status_display }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">No alerts have been dispatched for this request.</p>
+  {% endif %}
+</section>
+{% endblock %}

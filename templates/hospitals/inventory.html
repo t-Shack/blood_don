@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static icons %}
+{% block title %}Live inventory at {{ hospital.name }}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <a class="back-link" href="{{ hospital.get_absolute_url }}">{% icon "arrow-left" %} {{ hospital.name }}</a>
+  <h1>Live blood inventory</h1>
+  <p class="lede">{{ hospital.name }}, {{ hospital.city }}, {{ hospital.state }}. Figures refresh on their own; there is no need to reload.</p>
+</header>
+
+{% include 'inventory/_grid.html' %}
+
+<section class="section mt-32" aria-labelledby="reading-title">
+  <h2 class="section-title mb-24" id="reading-title">Reading this grid</h2>
+  <div class="grid grid-3">
+    <div>
+      <span class="badge badge-green">Sufficient</span>
+      <p class="muted small mt-16 mb-0">At or above twice the critical threshold for that type.</p>
+    </div>
+    <div>
+      <span class="badge badge-amber">Running low</span>
+      <p class="muted small mt-16 mb-0">Above the threshold, but less than twice it.</p>
+    </div>
+    <div>
+      <span class="badge badge-red">Critical shortage</span>
+      <p class="muted small mt-16 mb-0">Below the threshold. Donors of compatible types are alerted when a request cannot be met.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/inventory.js' %}"></script>
+{% endblock %}

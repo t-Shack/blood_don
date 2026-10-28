@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load icons %}
+{% block title %}New blood request{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <a class="back-link" href="{% url 'requests:list' %}">{% icon "arrow-left" %} All requests</a>
+  <h1>Raise a blood request</h1>
+  <p class="lede">
+    Stock is checked first. Anything the shelf cannot cover goes out straight away as an email
+    alert to every eligible, compatible donor.
+  </p>
+</header>
+
+<div class="split">
+  <form class="panel form form-wide" method="post" novalidate>
+    {% csrf_token %}
+    {% include 'core/_form_field.html' with field=form.hospital %}
+    {% include 'core/_form_field.html' with field=form.patient_name %}
+    <div class="form-row">
+      {% include 'core/_form_field.html' with field=form.blood_group %}
+      {% include 'core/_form_field.html' with field=form.rhesus_factor %}
+    </div>
+    <div class="form-row">
+      {% include 'core/_form_field.html' with field=form.quantity_needed %}
+      {% include 'core/_form_field.html' with field=form.urgency_level %}
+    </div>
+    {% include 'core/_form_field.html' with field=form.notes %}
+    <div class="form-actions">
+      <button class="btn btn-primary btn-responsive" type="submit" data-loading-label="Submitting…">Submit request</button>
+      <a class="btn btn-ghost btn-responsive" href="{% url 'requests:list' %}">Cancel</a>
+    </div>
+  </form>
+
+  <aside class="sticky-aside stack">
+    <section class="panel" aria-labelledby="next-title">
+      <h2 class="panel-title" id="next-title">What happens next</h2>
+      <ol class="steps steps-compact">
+        <li><h3>Stock is checked</h3><p>If the shelf covers the request, it is fulfilled at once and stock goes down.</p></li>
+        <li><h3>Donors are alerted</h3><p>If not, whatever is on the shelf is released, the request stays pending, and compatible donors are emailed.</p></li>
+        <li><h3>Donations are recorded</h3><p>Donations logged against the request count toward it.</p></li>
+      </ol>
+    </section>
+    <div class="alert alert-info">
+      {% icon "info" %}
+      <p><strong>Patient name is optional.</strong> Record it only where your hospital's policy allows; it appears on the request detail page.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

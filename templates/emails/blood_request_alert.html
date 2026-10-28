@@ -1,0 +1,74 @@
+{% extends 'emails/base_email.html' %}
+{% block subject %}{{ blood_type_needed }} blood needed at {{ hospital_name }}{% endblock %}
+
+{% block content %}
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+    <tr>
+      <td style="background-color:#F6E3E3; border-radius:999px; padding:6px 14px;">
+        <span style="color:#B21F2C; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;">
+          {{ urgency_level }} urgency
+        </span>
+      </td>
+    </tr>
+  </table>
+
+  <h1 style="margin:0 0 16px; font-size:22px; line-height:1.3; color:#16171A;">
+    {{ donor_name }}, {{ hospital_name }} needs {{ blood_type_needed }} blood.
+  </h1>
+
+  <p style="margin:0 0 20px; font-size:15px; line-height:1.65; color:#4E5157;">
+    A patient at {{ hospital_name }}{% if hospital_city %}, {{ hospital_city }}{% endif %} needs
+    <strong style="color:#16171A;">{{ units_needed }} unit(s)</strong> of
+    <strong style="color:#16171A;">{{ blood_type_needed }}</strong>, and the blood bank cannot
+    cover it from stock. Your blood type is a match.
+  </p>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="margin:0 0 24px; border:1px solid #DEDED9; border-radius:10px;">
+    <tr>
+      <td style="padding:16px 20px; border-bottom:1px solid #DEDED9;">
+        <span style="font-size:12px; color:#5F6268; text-transform:uppercase; letter-spacing:0.06em;">Hospital</span><br>
+        <span style="font-size:15px; color:#16171A; font-weight:600;">{{ hospital_name }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:16px 20px; border-bottom:1px solid #DEDED9;">
+        <span style="font-size:12px; color:#5F6268; text-transform:uppercase; letter-spacing:0.06em;">Blood type needed</span><br>
+        <span style="font-size:15px; color:#B21F2C; font-weight:700;">{{ blood_type_needed }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:16px 20px;">
+        <span style="font-size:12px; color:#5F6268; text-transform:uppercase; letter-spacing:0.06em;">Units outstanding</span><br>
+        <span style="font-size:15px; color:#16171A; font-weight:600;">{{ units_needed }}</span>
+      </td>
+    </tr>
+  </table>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+    <tr>
+      <td style="background-color:#B21F2C; border-radius:10px;">
+        <a href="{{ donate_url }}"
+           style="display:inline-block; padding:14px 24px; color:#FCFCFB; font-size:15px; font-weight:600; text-decoration:none;">
+          I can donate
+        </a>
+      </td>
+      <td style="width:12px;"></td>
+      <td style="border:1px solid #DEDED9; border-radius:10px;">
+        <a href="{{ hospital_url }}"
+           style="display:inline-block; padding:13px 22px; color:#16171A; font-size:15px; font-weight:600; text-decoration:none;">
+          Hospital details
+        </a>
+      </td>
+    </tr>
+  </table>
+
+  <p style="margin:0; font-size:14px; line-height:1.65; color:#4E5157;">
+    Not sure you are eligible today? The <a href="{{ criteria_url }}" style="color:#A51C28;">health criteria</a>
+    take a minute to read. If you donated in the last 56 days, please sit this one out.
+  </p>
+{% endblock %}
+
+{% block footer %}
+  {{ unsubscribe_note }}
+{% endblock %}

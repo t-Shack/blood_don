@@ -1,0 +1,83 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons %}
+{% block admin_title %}Manage hospitals{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <div class="page-head-row">
+    <h1>Hospitals</h1>
+    <div class="page-head-actions">
+      <a class="btn btn-primary btn-responsive" href="{% url 'core:admin_hospital_add' %}">{% icon "plus" %} Add hospital</a>
+    </div>
+  </div>
+</header>
+
+<form class="filter-bar" method="get" role="search">
+  <div class="form-group">
+    <label for="q">Search</label>
+    <input type="search" id="q" name="q" value="{{ query }}" placeholder="Name, city or state">
+  </div>
+  <div class="filter-actions">
+    <button class="btn btn-secondary" type="submit">{% icon "magnifying-glass" %} Search</button>
+    <a class="btn btn-ghost" href="{% url 'core:admin_hospitals' %}">Clear</a>
+  </div>
+</form>
+
+{% if hospitals %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">Hospital</th><th scope="col">Location</th><th scope="col">Blood bank</th><th scope="col" class="num">Stock</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        {% for hospital in hospitals %}
+          <tr>
+            <td>
+              <span class="cell-main">{{ hospital.name }}</span>
+              {% if hospital.email %}<span class="cell-sub">{{ hospital.email }}</span>{% endif %}
+            </td>
+            <td>{{ hospital.city }}, {{ hospital.state }}</td>
+            <td>
+              {% if hospital.has_blood_bank %}
+                <span class="badge badge-outline">Yes</span>
+                <span class="cell-sub">Capacity {{ hospital.blood_bank_capacity }}</span>
+              {% else %}
+                <span class="badge badge-neutral">No</span>
+              {% endif %}
+            </td>
+            <td class="num">{{ hospital.stock|default:0 }}</td>
+            <td>
+              {% if hospital.is_active %}
+                <span class="badge badge-green">Active</span>
+              {% else %}
+                <span class="badge badge-neutral">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="cell-actions">
+              <div class="cluster">
+                <a class="btn btn-ghost btn-sm" href="{% url 'core:admin_hospital_edit' hospital.pk %}">Edit</a>
+                {% if hospital.has_blood_bank %}
+                  <a class="btn btn-ghost btn-sm" href="{% url 'core:admin_hospital_inventory' hospital.pk %}">Inventory</a>
+                {% endif %}
+                <form method="post" action="{% url 'core:admin_hospital_toggle' hospital.pk %}"
+                      data-confirm="{% if hospital.is_active %}Deactivate{% else %}Reactivate{% endif %} {{ hospital.name }}?">
+                  {% csrf_token %}
+                  <button class="btn btn-danger btn-sm" type="submit">{% if hospital.is_active %}Deactivate{% else %}Reactivate{% endif %}</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'core/_pagination.html' %}
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{% icon "hospital" %}</div>
+    <h2>No hospitals yet</h2>
+    <p>Add the first hospital to start tracking its blood bank.</p>
+    <a class="btn btn-primary" href="{% url 'core:admin_hospital_add' %}">Add the first one</a>
+  </div>
+{% endif %}
+{% endblock %}

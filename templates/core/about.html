@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load icons ui %}
+{% block title %}About BDMIS{% endblock %}
+
+{% block content %}
+<div class="container-medium">
+  <header class="page-head">
+    <h1>About BDMIS</h1>
+    <p class="lede">A blood donor management information system built for Nigerian hospitals.</p>
+  </header>
+
+  <section class="prose-section">
+    <h2>The problem</h2>
+    <div>
+      <p>
+        Nigerian hospitals routinely run short of specific blood types with no reliable way to
+        reach the donors who could help. Donor records sit in paper ledgers, stock levels are
+        known only to the blood bank, and appeals go out through informal channels.
+      </p>
+    </div>
+  </section>
+
+  <section class="prose-section">
+    <h2>What BDMIS does</h2>
+    <div>
+      <p>
+        It keeps a live register of donors and their blood types, and tracks stock per hospital
+        for each blood type. The moment a request cannot be met from stock, it emails every
+        eligible, compatible donor with the hospital, the urgency and the shortfall.
+      </p>
+    </div>
+  </section>
+
+  <section class="prose-section" id="compatibility">
+    <h2>Compatibility, exactly</h2>
+    <div>
+      <p>
+        Matching uses strict ABO and rhesus rules. An O&minus; donor can give to anyone, and an AB+
+        patient can receive from anyone. Every pairing in between follows the same table the
+        blood bank would use, and automated tests cover all of it. This chart is drawn from that
+        table.
+      </p>
+      <div class="compat table-scroll">
+        <table class="compat-table">
+          <caption>Rows are the donor's blood type, columns the patient's. A tick means the donor can give.</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="compat-corner">Donor<br>to patient</th>
+              {% for label in blood_type_labels %}<th scope="col">{{ label|rh }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in compatibility_rows %}
+              <tr>
+                <th scope="row">{{ row.donor|rh }}</th>
+                {% for cell in row.cells %}
+                  <td{% if cell.ok %} class="yes"{% endif %}>
+                    {% if cell.ok %}{% icon "check" label="Can give" %}{% else %}<span class="visually-hidden">Cannot give</span>{% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="prose-section">
+    <h2>Scope</h2>
+    <div>
+      <p>
+        The system is designed for hospitals across Nigeria. This deployment is populated with
+        and tested against hospitals in the Nsukka metropolis, Enugu State.
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

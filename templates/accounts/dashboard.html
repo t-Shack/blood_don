@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static icons ui %}
+{% block title %}Your dashboard{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="page-head-row">
+    <div>
+      <h1>Hello, {{ user.get_full_name }}</h1>
+      <p class="lede">Your donation status, your history, and the hospitals that need your blood type.</p>
+    </div>
+    <div class="page-head-actions">
+      <a class="btn btn-secondary" href="{% url 'accounts:profile' %}">{% icon "user" %} Edit profile</a>
+      <a class="btn btn-secondary" href="{% url 'notifications:list' %}">
+        {% icon "bell" %} Alerts{% if unread_notifications %} <span class="nav-count" aria-label="{{ unread_notifications }} new">{{ unread_notifications }}</span>{% endif %}
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="section donor-summary" data-eligibility-url="{% url 'api:donor_eligibility' %}" aria-label="Your donor status">
+  <div class="ds-type">
+    <span class="ds-label">Your blood type</span>
+    <span class="ds-type-value">{{ profile.full_blood_type|rh }}</span>
+  </div>
+
+  <div class="ds-cell ds-status">
+    <span class="ds-label">Status</span>
+    <span class="badge {% if profile.is_eligible %}badge-green{% else %}badge-amber{% endif %}" data-eligibility-badge>
+      {% if profile.is_eligible %}Eligible to donate{% else %}Not yet eligible{% endif %}
+    </span>
+    <p class="ds-status-line" data-days-until>
+      {% if profile.is_eligible %}You can donate today{% else %}{{ profile.days_until_eligible }} day(s) to go{% endif %}
+    </p>
+    {% if not profile.is_eligible and profile.next_eligible_date %}
+      <div class="meter" aria-hidden="true">
+        <div class="meter-fill" data-status="low" style="width: calc(100% - {% widthratio profile.days_until_eligible DONATION_INTERVAL_DAYS 100 %}%)"></div>
+      </div>
+      <p class="ds-note">Eligible again on {{ profile.next_eligible_date|date:'j F Y' }}</p>
+    {% endif %}
+  </div>
+
+  <div class="ds-cell">
+    <span class="ds-label">Donations recorded</span>
+    <span class="ds-value">{{ donation_count }}</span>
+    <p class="ds-note">{{ total_units }} unit{{ total_units|pluralize }} given</p>
+  </div>
+
+  <div class="ds-cell">
+    <span class="ds-label">Last donation</span>
+    {% if profile.last_donation_date %}
+      <span class="ds-value">{{ profile.last_donation_date|date:'j M' }}</span>
+      <p class="ds-note">{{ profile.last_donation_date|date:'Y' }}</p>
+    {% else %}
+      <span class="ds-value">None</span>
+      <p class="ds-note">No donation on record</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" aria-labelledby="need-title">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title" id="need-title">Hospitals that need your blood</h2>
+      <p class="give-to">
+        You can give to
+        {% for group, rhesus in recipient_types %}<span class="blood-badge">{{ group }}{{ rhesus|rh }}</span>{% endfor %}
+      </p>
+    </div>
+    <a class="link-arrow" href="{% url 'inventory:overview' %}">See live inventory {% icon "arrow-right" %}</a>
+  </div>
+
+  {% if matching_shortages %}
+    <ul class="need-list">
+      {% for item in matching_shortages %}
+        <li>
+          <a class="need-row" href="{% url 'hospitals:inventory' item.hospital.pk %}">
+            <span class="blood-badge">{{ item.full_blood_type|rh }}</span>
+            <span>
+              <span class="need-name">{{ item.hospital.name }}</span>
+              <span class="need-place">{{ item.hospital.city }}, {{ item.hospital.state }}</span>
+            </span>
+            <span class="need-units">{{ item.available_units }} of {{ item.critical_threshold }} units</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">{% icon "check-circle" %}</div>
+      <h3>No shortages you can help with</h3>
+      <p>No hospital is short of a blood type you can give right now. We will email you the moment that changes.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="section" aria-labelledby="history-title">
+  <div class="section-head">
+    <h2 class="section-title" id="history-title">Your donation history</h2>
+    <a class="link-arrow" href="{% url 'donations:list' %}">Full history {% icon "arrow-right" %}</a>
+  </div>
+  {% if donations %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Date</th><th scope="col">Hospital</th><th scope="col" class="num">Units</th><th scope="col">Recorded by</th></tr>
+        </thead>
+        <tbody>
+          {% for donation in donations %}
+            <tr>
+              <td class="nowrap">{{ donation.donation_date|date:'j M Y' }}</td>
+              <td class="cell-main">{{ donation.hospital.name }}</td>
+              <td class="num">{{ donation.units_donated }}</td>
+              <td class="muted">{{ donation.recorded_by.get_full_name }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">{% icon "drop" %}</div>
+      <h3>No donations yet</h3>
+      <p>You have not donated through BDMIS yet. Your first one will appear here.</p>
+      <a class="btn btn-primary" href="{% url 'hospitals:list' %}">Find a blood bank near you</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notifications.js' %}"></script>
+{% endblock %}

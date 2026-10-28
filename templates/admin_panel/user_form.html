@@ -1,0 +1,30 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons %}
+{% block admin_title %}{% if is_add %}Add account{% else %}Edit account{% endif %}{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <a class="back-link" href="{% url 'core:admin_users' %}">{% icon "arrow-left" %} Users</a>
+  <h1>{% if is_add %}Add an account{% else %}Edit {{ user_obj.get_full_name }}{% endif %}</h1>
+  <p class="lede">Use this for medical staff and administrators. Donors register themselves.</p>
+</header>
+
+<form class="panel form" method="post" novalidate>
+  {% csrf_token %}
+  {% include 'core/_form_field.html' with field=form.full_name %}
+  <div class="form-row">
+    {% include 'core/_form_field.html' with field=form.username %}
+    {% include 'core/_form_field.html' with field=form.email %}
+  </div>
+  <div class="form-row">
+    {% include 'core/_form_field.html' with field=form.role %}
+    {% include 'core/_form_field.html' with field=form.hospital %}
+  </div>
+  {% include 'core/_form_field.html' with field=form.password %}
+  {% include 'core/_form_field.html' with field=form.is_active %}
+  <div class="form-actions">
+    <button class="btn btn-primary btn-responsive" type="submit" data-loading-label="Saving…">{% if is_add %}Create account{% else %}Save changes{% endif %}</button>
+    <a class="btn btn-ghost btn-responsive" href="{% url 'core:admin_users' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

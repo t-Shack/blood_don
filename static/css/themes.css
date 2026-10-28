@@ -1,0 +1,146 @@
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url('../fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                 U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+                 U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url('../fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+                 U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+                 U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #F4F4F1;
+  --bg-sunken: #EBEBE7;
+  --surface: #FCFCFB;
+  --surface-2: #F1F1EE;
+  --ink: #16171A;
+  --ink-2: #4E5157;
+  --muted: #5F6268;
+  --line: #DEDED9;
+  --line-input: #8C8E88;
+
+  --accent: #B21F2C;
+  --accent-hover: #961A25;
+  --accent-ink: #A51C28;
+  --accent-soft: #F6E3E3;
+  --on-accent: #FFF8F6;
+
+  --amber: #8A5300;
+  --amber-soft: #F7EBD2;
+  --green: #1C6B45;
+  --green-soft: #E0EEE5;
+
+  --focus: #16171A;
+  --shadow-sm: 0 1px 2px rgba(22, 23, 26, 0.05);
+  --shadow: 0 1px 2px rgba(22, 23, 26, 0.04), 0 12px 32px -18px rgba(22, 23, 26, 0.28);
+  --scrim: rgba(22, 23, 26, 0.4);
+
+  --icon-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2363666C'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E");
+  --icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2363666C'%3E%3Cpath d='M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z'/%3E%3C/svg%3E");
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #101113;
+  --bg-sunken: #0B0C0D;
+  --surface: #17181B;
+  --surface-2: #1E1F22;
+  --ink: #EDEDEA;
+  --ink-2: #AFB1B5;
+  --muted: #8E9196;
+  --line: #2A2B2F;
+  --line-input: #6A6C71;
+
+  --accent: #BF2A34;
+  --accent-hover: #A8232C;
+  --accent-ink: #FF7A74;
+  --accent-soft: #3A1719;
+  --on-accent: #FFF8F6;
+
+  --amber: #F0B557;
+  --amber-soft: #33260F;
+  --green: #6BCB96;
+  --green-soft: #13291D;
+
+  --focus: #EDEDEA;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px -20px rgba(0, 0, 0, 0.7);
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  --icon-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%238E9196'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E");
+  --icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%238E9196'%3E%3Cpath d='M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z'/%3E%3C/svg%3E");
+}
+
+/* Tokens that do not change with the theme. */
+:root {
+  --stage-bg: #121315;
+  --stage-ink: #F4F2EF;
+  --stage-ink-2: #BDB8B5;
+  --stage-line: rgba(244, 242, 239, 0.16);
+  --stage-red: #FF6B63;
+
+  --font: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --fs-display: clamp(2.6rem, 1.3rem + 4.6vw, 5.4rem);
+  --fs-h1: clamp(2rem, 1.45rem + 1.9vw, 3.1rem);
+  --fs-h2: clamp(1.6rem, 1.25rem + 1.2vw, 2.35rem);
+  --fs-h3: 1.1875rem;
+  --fs-lede: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.8125rem;
+
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 16px;
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --container: 1440px;
+  --header-h: 68px;
+  --section-gap: clamp(72px, 9vw, 136px);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* z-index scale. Nothing else in the stylesheets invents its own. */
+  --z-header: 100;
+  --z-menu: 110;
+  --z-toast: 300;
+  --z-progress: 350;
+  --z-skip: 400;
+}
+
+body,
+.site-header,
+.panel,
+.table-wrap,
+.site-footer {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

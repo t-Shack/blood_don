@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load icons %}
+{% block title %}{% block admin_title %}Admin{% endblock %}{% endblock %}
+
+{% block content %}
+{% with url_name=request.resolver_match.url_name %}
+<div class="admin-layout">
+  <nav class="admin-nav" aria-label="Administration">
+    <p class="admin-nav-title">Administration</p>
+    <a href="{% url 'core:admin_dashboard' %}" {% if url_name == 'admin_dashboard' %}class="active" aria-current="page"{% endif %}>{% icon "compass" %} Overview</a>
+    <a href="{% url 'core:admin_hospitals' %}" {% if 'hospital' in url_name %}class="active" aria-current="page"{% endif %}>{% icon "hospital" %} Hospitals</a>
+    <a href="{% url 'core:admin_users' %}" {% if 'user' in url_name %}class="active" aria-current="page"{% endif %}>{% icon "users" %} Users</a>
+    <a href="{% url 'core:admin_requests' %}" {% if url_name == 'admin_requests' %}class="active" aria-current="page"{% endif %}>{% icon "clipboard-text" %} Requests</a>
+    <a href="{% url 'core:admin_criteria' %}" {% if 'criteria' in url_name %}class="active" aria-current="page"{% endif %}>{% icon "heartbeat" %} Donation criteria</a>
+    <a href="{% url 'core:admin_notifications' %}" {% if url_name == 'admin_notifications' %}class="active" aria-current="page"{% endif %}>{% icon "bell" %} Notification log</a>
+    <div class="admin-nav-sep" role="presentation"></div>
+    <a href="{% url 'donations:list' %}">{% icon "drop" %} Donation records</a>
+    {% if user.is_superuser %}<a href="/admin/">{% icon "lock-simple" %} Django admin</a>{% endif %}
+  </nav>
+
+  <div class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endwith %}
+{% endblock %}

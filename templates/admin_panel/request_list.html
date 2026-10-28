@@ -1,0 +1,59 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons ui %}
+{% block admin_title %}All blood requests{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <div class="page-head-row">
+    <h1>All blood requests</h1>
+    <div class="page-head-actions">
+      <a class="btn btn-primary btn-responsive" href="{% url 'requests:create' %}">{% icon "plus" %} New request</a>
+    </div>
+  </div>
+</header>
+
+<form class="filter-bar" method="get" data-autosubmit>
+  <div class="form-group">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button class="btn btn-secondary" type="submit">Apply</button>
+    <a class="btn btn-ghost" href="{% url 'core:admin_requests' %}">Clear</a>
+  </div>
+</form>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th scope="col">Raised</th><th scope="col">Hospital</th><th scope="col">Type</th><th scope="col">Released</th><th scope="col">Urgency</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Open</span></th></tr>
+    </thead>
+    <tbody>
+      {% for item in requests %}
+        <tr>
+          <td class="nowrap"><span data-timestamp="{{ item.created_at.isoformat }}">{{ item.created_at|date:'j M H:i' }}</span></td>
+          <td class="cell-main">{{ item.hospital.name }}</td>
+          <td><span class="blood-badge">{{ item.full_blood_type|rh }}</span></td>
+          <td>
+            <div class="progress-cell">
+              <span>{{ item.units_fulfilled }} / {{ item.quantity_needed }}</span>
+              <div class="meter" aria-hidden="true"><div class="meter-fill"{% if item.units_fulfilled >= item.quantity_needed %} data-status="done"{% endif %} style="width: {% widthratio item.units_fulfilled item.quantity_needed 100 %}%"></div></div>
+            </div>
+          </td>
+          <td><span class="badge {% if item.urgency_level == 'critical' %}badge-red{% elif item.urgency_level == 'medium' %}badge-amber{% else %}badge-neutral{% endif %}">{{ item.get_urgency_level_display }}</span></td>
+          <td><span class="badge {% if item.status == 'fulfilled' %}badge-green{% elif item.status == 'pending' %}badge-amber{% else %}badge-neutral{% endif %}">{{ item.get_status_display }}</span></td>
+          <td class="cell-actions"><a class="table-link" href="{{ item.get_absolute_url }}">Open {% icon "arrow-right" %}</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="table-empty">No requests match those filters.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'core/_pagination.html' %}
+{% endblock %}

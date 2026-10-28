@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: bdmis
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input"
+    preDeployCommand: "python manage.py migrate --no-input"
+    startCommand: "gunicorn bdmis.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 60"
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DJANGO_SETTINGS_MODULE
+        value: bdmis.settings.production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+
+  # Nightly re-check of the 56-day donor eligibility window.
+  - type: cron
+    name: bdmis-eligibility
+    runtime: python
+    schedule: "0 2 * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python manage.py update_donor_eligibility"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DJANGO_SETTINGS_MODULE
+        value: bdmis.settings.production
+      - key: SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        sync: false

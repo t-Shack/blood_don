@@ -1,0 +1,142 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons ui %}
+{% block admin_title %}Admin overview{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <h1>Admin overview</h1>
+  <p class="lede">The whole system at a glance.</p>
+</header>
+
+<section class="section stat-strip" aria-label="Key figures">
+  <div class="stat">
+    <div class="stat-value">{{ hospital_count }}</div>
+    <div class="stat-label">Active hospitals</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">{{ donor_count }}</div>
+    <div class="stat-label">Registered donors</div>
+    <p class="stat-note">{{ eligible_donor_count }} eligible today</p>
+  </div>
+  <div class="stat">
+    <div class="stat-value">{{ total_units }}</div>
+    <div class="stat-label">Units in stock</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value{% if pending_requests %} text-red{% endif %}">{{ pending_requests }}</div>
+    <div class="stat-label">Pending requests</div>
+    <p class="stat-note">{{ critical_requests }} critical</p>
+  </div>
+</section>
+
+<div class="section grid grid-2 align-start">
+  <section class="panel panel-flush" aria-labelledby="shortage-title">
+    <div class="panel-head">
+      <h2 class="panel-title" id="shortage-title">Critical shortages</h2>
+      <span class="badge {% if shortage_count %}badge-red{% else %}badge-green{% endif %}">{{ shortage_count }}</span>
+    </div>
+    {% if shortages %}
+      <div class="table-scroll">
+        <table class="table">
+          <thead><tr><th scope="col">Hospital</th><th scope="col">Type</th><th scope="col" class="num">Units</th><th scope="col"><span class="visually-hidden">Adjust</span></th></tr></thead>
+          <tbody>
+            {% for item in shortages %}
+              <tr>
+                <td class="cell-main">{{ item.hospital.name }}</td>
+                <td><span class="blood-badge">{{ item.full_blood_type|rh }}</span></td>
+                <td class="num text-red strong">{{ item.available_units }} / {{ item.critical_threshold }}</td>
+                <td class="cell-actions"><a class="table-link" href="{% url 'core:admin_hospital_inventory' item.hospital.pk %}">Adjust {% icon "arrow-right" %}</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="panel-body muted">Nothing is below threshold right now.</p>
+    {% endif %}
+  </section>
+
+  <div class="stack">
+    <section class="panel" aria-labelledby="health-title">
+      <h2 class="panel-title mb-24" id="health-title">System health</h2>
+      <dl class="definition-list">
+        <dt>Medical staff accounts</dt><dd class="num">{{ staff_count }}</dd>
+        <dt>Units donated (30 days)</dt><dd class="num">{{ recent_donations }}</dd>
+        <dt>Failed notifications</dt>
+        <dd>
+          {% if failed_notifications %}
+            <span class="cluster">
+              <span class="badge badge-red">{{ failed_notifications }}</span>
+              <a class="table-link small" href="{% url 'core:admin_notifications' %}?status=failed">Investigate {% icon "arrow-right" %}</a>
+            </span>
+          {% else %}
+            <span class="badge badge-green">None</span>
+          {% endif %}
+        </dd>
+      </dl>
+    </section>
+    <section class="panel" aria-labelledby="actions-title">
+      <h2 class="panel-title mb-24" id="actions-title">Quick actions</h2>
+      <div class="cluster">
+        <a class="btn btn-primary btn-sm" href="{% url 'core:admin_hospital_add' %}">{% icon "plus" %} Add hospital</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'core:admin_user_add' %}">Add staff account</a>
+        <a class="btn btn-secondary btn-sm" href="{% url 'core:admin_criteria_add' %}">Add criteria section</a>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="section grid grid-2 align-start">
+  <section class="panel panel-flush" aria-labelledby="latest-req-title">
+    <div class="panel-head">
+      <h2 class="panel-title" id="latest-req-title">Latest requests</h2>
+      <a class="table-link small" href="{% url 'core:admin_requests' %}">All requests {% icon "arrow-right" %}</a>
+    </div>
+    {% if latest_requests %}
+      <div class="table-scroll">
+        <table class="table">
+          <thead><tr><th scope="col">When</th><th scope="col">Hospital</th><th scope="col">Type</th><th scope="col">Status</th></tr></thead>
+          <tbody>
+            {% for item in latest_requests %}
+              <tr>
+                <td class="nowrap"><span data-timestamp="{{ item.created_at.isoformat }}">{{ item.created_at|date:'j M' }}</span></td>
+                <td class="cell-main"><a href="{{ item.get_absolute_url }}">{{ item.hospital.name }}</a></td>
+                <td><span class="blood-badge">{{ item.full_blood_type|rh }}</span></td>
+                <td><span class="badge {% if item.status == 'fulfilled' %}badge-green{% elif item.status == 'pending' %}badge-amber{% else %}badge-neutral{% endif %}">{{ item.get_status_display }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="panel-body muted">No requests yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel panel-flush" aria-labelledby="latest-don-title">
+    <div class="panel-head">
+      <h2 class="panel-title" id="latest-don-title">Latest donations</h2>
+      <a class="table-link small" href="{% url 'donations:list' %}">All donations {% icon "arrow-right" %}</a>
+    </div>
+    {% if latest_donations %}
+      <div class="table-scroll">
+        <table class="table">
+          <thead><tr><th scope="col">Date</th><th scope="col">Donor</th><th scope="col">Type</th><th scope="col" class="num">Units</th></tr></thead>
+          <tbody>
+            {% for item in latest_donations %}
+              <tr>
+                <td class="nowrap">{{ item.donation_date|date:'j M' }}</td>
+                <td class="cell-main">{{ item.donor.user.get_full_name }}</td>
+                <td><span class="blood-badge">{{ item.blood_type|rh }}</span></td>
+                <td class="num">{{ item.units_donated }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="panel-body muted">No donations recorded yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

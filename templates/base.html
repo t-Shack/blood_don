@@ -1,0 +1,149 @@
+{% load static icons %}<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %} · {{ SITE_NAME }}</title>
+  <meta name="description" content="{% block description %}{{ SITE_TAGLINE }}. Connecting voluntary blood donors with Nigerian hospitals that are short of blood, starting in the Nsukka metropolis.{% endblock %}">
+  <meta name="theme-color" content="#F4F4F1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101113" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ SITE_NAME }}">
+  <meta property="og:title" content="{% block og_title %}{{ SITE_NAME }}: give blood where it is needed{% endblock %}">
+  <meta property="og:description" content="Register your blood type once. BDMIS emails you only when a hospital near you is short of blood you can give.">
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/social-card.jpg' %}">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'fonts/archivo-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+
+  <link rel="stylesheet" href="{% static 'css/themes.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+
+  {# Loaded in <head> so the stored theme applies before first paint. #}
+  <script src="{% static 'js/theme.js' %}"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body data-poll-interval="{{ INVENTORY_POLL_INTERVAL_MS }}">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  {% with url_name=request.resolver_match.url_name app_name=request.resolver_match.app_name %}
+  <header class="site-header">
+    <div class="container site-header-inner">
+      <a class="brand" href="{% url 'core:home' %}">
+        <span class="brand-mark" aria-hidden="true">{% icon "drop" %}</span>
+        <span>
+          <span class="brand-name">{{ SITE_NAME }}</span>
+          <span class="brand-sub">{{ SITE_TAGLINE }}</span>
+        </span>
+      </a>
+
+      <div class="nav-panel" id="nav-panel">
+        <nav aria-label="Primary">
+          <ul class="nav-links">
+            <li><a href="{% url 'hospitals:list' %}" {% if app_name == 'hospitals' %}class="active" aria-current="page"{% endif %}>Hospitals</a></li>
+            <li><a href="{% url 'inventory:overview' %}" {% if app_name == 'inventory' %}class="active" aria-current="page"{% endif %}>Blood inventory</a></li>
+            <li><a href="{% url 'core:criteria' %}" {% if url_name == 'criteria' %}class="active" aria-current="page"{% endif %}>Donation criteria</a></li>
+            {% if user.is_authenticated %}
+              {% if user.is_donor %}
+                <li><a href="{% url 'accounts:dashboard' %}" {% if url_name == 'dashboard' %}class="active" aria-current="page"{% endif %}>Dashboard</a></li>
+                <li>
+                  <a href="{% url 'notifications:list' %}" {% if app_name == 'notifications' %}class="active" aria-current="page"{% endif %}>
+                    Alerts
+                    {% if unread_notification_count %}<span class="nav-count" aria-label="{{ unread_notification_count }} unread">{{ unread_notification_count }}</span>{% endif %}
+                  </a>
+                </li>
+              {% endif %}
+              {% if user.is_medical_staff or user.is_administrator %}
+                <li><a href="{% url 'requests:list' %}" {% if app_name == 'requests' %}class="active" aria-current="page"{% endif %}>Requests</a></li>
+                <li><a href="{% url 'donations:record' %}" {% if app_name == 'donations' and url_name == 'record' %}class="active" aria-current="page"{% endif %}>Record donation</a></li>
+              {% endif %}
+              {% if user.is_administrator %}
+                <li><a href="{% url 'core:admin_dashboard' %}" {% if 'admin_' in url_name %}class="active" aria-current="page"{% endif %}>Admin</a></li>
+              {% endif %}
+            {% endif %}
+          </ul>
+        </nav>
+
+        <div class="nav-actions">
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button class="btn btn-secondary btn-sm" type="submit" data-loading-label="Signing out…">{% icon "sign-out" %} Sign out</button>
+            </form>
+          {% else %}
+            <a class="btn btn-secondary btn-sm" href="{% url 'accounts:login' %}">Sign in</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'accounts:register' %}">Become a donor</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="header-tools">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+          {% icon "moon" css_class="icon-moon" %}{% icon "sun" css_class="icon-sun" %}
+        </button>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Open menu">
+          {% icon "list" css_class="icon-open" %}{% icon "x" css_class="icon-close" %}
+        </button>
+      </div>
+    </div>
+  </header>
+  {% endwith %}
+
+  {# Django messages are handed to JS, which renders them as toasts. #}
+  {% if messages %}
+    <div class="hidden">
+      {% for message in messages %}
+        <span data-message="{{ message|escape }}" data-level="{{ message.tags|default:'info' }}"></span>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main id="main" class="{% block main_class %}{% endblock %}" tabindex="-1">
+    {% block main %}
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    {% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <a class="brand" href="{% url 'core:home' %}">
+            <span class="brand-mark" aria-hidden="true">{% icon "drop" %}</span>
+            <span class="brand-name">{{ SITE_NAME }}</span>
+          </a>
+          <p>{{ SITE_TAGLINE }}. Connecting voluntary donors with Nigerian hospitals, starting from the Nsukka metropolis.</p>
+        </div>
+        <nav aria-labelledby="footer-donors">
+          <h2 class="footer-heading" id="footer-donors">For donors</h2>
+          <ul>
+            <li><a href="{% url 'accounts:register' %}">Become a donor</a></li>
+            <li><a href="{% url 'core:criteria' %}">Donation criteria</a></li>
+            <li><a href="{% url 'hospitals:list' %}">Hospitals</a></li>
+          </ul>
+        </nav>
+        <nav aria-labelledby="footer-data">
+          <h2 class="footer-heading" id="footer-data">Live data</h2>
+          <ul>
+            <li><a href="{% url 'inventory:overview' %}">Blood inventory</a></li>
+            <li><a href="{% url 'core:about' %}">About BDMIS</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; {% now "Y" %} {{ SITE_NAME }}. Every unit counts.</span>
+        <span class="footer-emergency">{% icon "phone" %} In an emergency, call your nearest hospital directly.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

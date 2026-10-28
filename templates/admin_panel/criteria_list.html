@@ -1,0 +1,54 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons %}
+{% block admin_title %}Donation criteria{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <div class="page-head-row">
+    <div>
+      <h1>Donation criteria</h1>
+      <p class="lede">Content shown on the public <a href="{% url 'core:criteria' %}">criteria page</a>, in this order.</p>
+    </div>
+    <div class="page-head-actions">
+      <a class="btn btn-primary btn-responsive" href="{% url 'core:admin_criteria_add' %}">{% icon "plus" %} Add section</a>
+    </div>
+  </div>
+</header>
+
+{% if criteria_list %}
+  <div class="stack">
+    {% for item in criteria_list %}
+      <section class="panel" aria-labelledby="criteria-{{ item.pk }}">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title" id="criteria-{{ item.pk }}">{% if item.icon %}<span aria-hidden="true">{{ item.icon }}</span> {% endif %}{{ item.title }}</h2>
+            <p class="tiny muted mb-0 mt-16">Position {{ item.order }}. Updated {{ item.updated_at|date:'j M Y' }}.</p>
+          </div>
+          {% if item.is_active %}
+            <span class="badge badge-green">Published</span>
+          {% else %}
+            <span class="badge badge-neutral">Hidden</span>
+          {% endif %}
+        </div>
+        <ul class="criteria-list">
+          {% for point in item.points %}<li>{{ point }}</li>{% endfor %}
+        </ul>
+        <div class="cluster mt-24">
+          <a class="btn btn-secondary btn-sm" href="{% url 'core:admin_criteria_edit' item.pk %}">Edit</a>
+          <form method="post" action="{% url 'core:admin_criteria_delete' item.pk %}" data-confirm="Delete &ldquo;{{ item.title }}&rdquo;? This cannot be undone.">
+            {% csrf_token %}
+            <button class="btn btn-danger btn-sm" type="submit" data-loading-label="Deleting…">Delete</button>
+          </form>
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{% icon "clipboard-text" %}</div>
+    <h2>No criteria sections yet</h2>
+    <p>The public criteria page is empty until you add one.</p>
+    <a class="btn btn-primary" href="{% url 'core:admin_criteria_add' %}">Add the first section</a>
+  </div>
+{% endif %}
+{% endblock %}

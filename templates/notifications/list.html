@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load icons ui %}
+{% block title %}Your alerts{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>Your alerts</h1>
+  <p class="lede">Every request we have emailed you about, most recent first.</p>
+  {% if marked_read %}
+    <div class="page-head-meta"><span class="badge badge-red">{% icon "bell" %} {{ marked_read }} new since your last visit</span></div>
+  {% endif %}
+</header>
+
+{% if notifications %}
+  <ul class="alert-list">
+    {% for note in notifications %}
+      <li class="alert-item fade-in-on-load">
+        <span class="blood-badge blood-badge-md">{{ note.blood_request.full_blood_type|rh }}</span>
+        <h2>{{ note.blood_request.hospital.name }}</h2>
+        <p class="alert-meta">
+          <span data-timestamp="{{ note.sent_at.isoformat }}">{{ note.sent_at|date:'j M Y H:i' }}</span>
+          in {{ note.blood_request.hospital.city }}
+        </p>
+        <p class="alert-body">{{ note.message }}</p>
+        <div class="alert-foot">
+          <span class="badge {% if note.blood_request.status == 'pending' %}badge-amber{% elif note.blood_request.status == 'fulfilled' %}badge-green{% else %}badge-neutral{% endif %}">
+            Request {{ note.blood_request.get_status_display|lower }}
+          </span>
+          <a class="link-arrow small" href="{% url 'hospitals:inventory' note.blood_request.hospital.pk %}">Hospital stock {% icon "arrow-right" %}</a>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  {% include 'core/_pagination.html' %}
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{% icon "bell" %}</div>
+    <h2>No alerts yet</h2>
+    <p>We will email you when a nearby hospital needs your blood type, and every alert will be listed here.</p>
+  </div>
+{% endif %}
+{% endblock %}

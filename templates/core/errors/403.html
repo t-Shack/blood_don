@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Not permitted{% endblock %}
+{% block content %}
+<div class="error-page">
+  <p class="error-code" aria-hidden="true">403</p>
+  <div>
+    <h1>You do not have access to that page</h1>
+    <p class="lede">Your account role does not include this area. If you believe that is wrong, contact an administrator.</p>
+    <div class="cluster">
+      <a class="btn btn-primary" href="{% url 'core:home' %}">Back to the homepage</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

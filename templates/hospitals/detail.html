@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static icons %}
+{% block title %}{{ hospital.name }}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <a class="back-link" href="{% url 'hospitals:list' %}">{% icon "arrow-left" %} Hospital directory</a>
+  <h1>{{ hospital.name }}</h1>
+  <p class="lede">{{ hospital.address }}, {{ hospital.city }}, {{ hospital.state }}</p>
+  <div class="cluster page-head-meta">
+    {% if hospital.has_blood_bank %}
+      <span class="badge badge-outline">{% icon "drop" %} Blood bank on site</span>
+      <span class="badge badge-neutral">Capacity {{ hospital.blood_bank_capacity }} units</span>
+    {% else %}
+      <span class="badge badge-neutral">No blood bank</span>
+    {% endif %}
+    {% if shortage_count %}<span class="badge badge-red">{% icon "warning" %} {{ shortage_count }} type{{ shortage_count|pluralize }} critical</span>{% endif %}
+  </div>
+</header>
+
+<div class="grid grid-2 section">
+  <section class="panel" aria-labelledby="contact-title">
+    <h2 class="panel-title mb-24" id="contact-title">Contact</h2>
+    <ul class="contact-list">
+      <li>{% icon "map-pin" %}<span>{{ hospital.address }}, {{ hospital.city }}, {{ hospital.state }}</span></li>
+      {% if hospital.phone_number %}<li>{% icon "phone" %}<a href="tel:{{ hospital.phone_number }}">{{ hospital.phone_number }}</a></li>{% endif %}
+      {% if hospital.email %}<li>{% icon "envelope-simple" %}<a href="mailto:{{ hospital.email }}">{{ hospital.email }}</a></li>{% endif %}
+    </ul>
+  </section>
+
+  <section class="panel" aria-labelledby="bank-title">
+    <h2 class="panel-title mb-24" id="bank-title">Blood bank</h2>
+    {% if hospital.has_blood_bank %}
+      <div class="capacity">
+        <div class="capacity-figures">
+          <span><strong>{{ hospital.total_units }}</strong> of {{ hospital.blood_bank_capacity }} units held</span>
+          <span>{{ hospital.capacity_percentage }}% of capacity</span>
+        </div>
+        <div class="meter" aria-hidden="true"><div class="meter-fill" style="width: {{ hospital.capacity_percentage }}%"></div></div>
+      </div>
+      <a class="btn btn-primary mt-24" href="{% url 'hospitals:inventory' hospital.pk %}">Open live inventory</a>
+    {% else %}
+      <p class="muted mb-0">This hospital does not operate a blood bank. Donations are directed to a partner facility.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% if hospital.has_blood_bank %}
+  {% include 'inventory/_grid.html' %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/inventory.js' %}"></script>
+{% endblock %}

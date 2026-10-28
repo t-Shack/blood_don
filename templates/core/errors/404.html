@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Page not found{% endblock %}
+{% block content %}
+<div class="error-page">
+  <p class="error-code" aria-hidden="true">404</p>
+  <div>
+    <h1>That page does not exist</h1>
+    <p class="lede">The link may be out of date, or the record may have been removed.</p>
+    <div class="cluster">
+      <a class="btn btn-primary" href="{% url 'core:home' %}">Back to the homepage</a>
+      <a class="btn btn-secondary" href="{% url 'hospitals:list' %}">Hospital directory</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

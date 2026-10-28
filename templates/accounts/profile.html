@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load icons ui %}
+{% block title %}Your profile{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <a class="back-link" href="{% url 'accounts:dashboard' %}">{% icon "arrow-left" %} Dashboard</a>
+  <h1>Your profile</h1>
+  <p class="lede">Keep this accurate. It decides which alerts reach you.</p>
+</header>
+
+<div class="split">
+  <form class="panel form form-wide" method="post" novalidate>
+    {% csrf_token %}
+    <fieldset class="form-section">
+      <legend class="form-section-title">Personal details</legend>
+      {% include 'core/_form_field.html' with field=form.full_name %}
+      <div class="form-row">
+        {% include 'core/_form_field.html' with field=form.blood_group %}
+        {% include 'core/_form_field.html' with field=form.rhesus_factor %}
+        {% include 'core/_form_field.html' with field=form.date_of_birth %}
+      </div>
+    </fieldset>
+    <fieldset class="form-section">
+      <legend class="form-section-title">Contact</legend>
+      <div class="form-row">
+        {% include 'core/_form_field.html' with field=form.phone_number %}
+        {% include 'core/_form_field.html' with field=form.city %}
+        {% include 'core/_form_field.html' with field=form.state %}
+      </div>
+      {% include 'core/_form_field.html' with field=form.address %}
+    </fieldset>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-responsive" type="submit" data-loading-label="Saving…">Save changes</button>
+      <a class="btn btn-ghost btn-responsive" href="{% url 'accounts:dashboard' %}">Cancel</a>
+    </div>
+  </form>
+
+  <aside class="panel sticky-aside" aria-labelledby="elig-title">
+    <div class="panel-head">
+      <h2 class="panel-title" id="elig-title">Eligibility</h2>
+      <span class="blood-badge">{{ profile.full_blood_type|rh }}</span>
+    </div>
+    <dl class="definition-list">
+      <dt>Status</dt>
+      <dd>
+        {% if profile.is_eligible %}
+          <span class="badge badge-green">Eligible</span>
+        {% else %}
+          <span class="badge badge-amber">Deferred for {{ profile.days_until_eligible }} more day{{ profile.days_until_eligible|pluralize }}</span>
+        {% endif %}
+      </dd>
+      <dt>Last donation</dt>
+      <dd>{{ profile.last_donation_date|date:'j M Y'|default:'None on record' }}</dd>
+      <dt>Next eligible</dt>
+      <dd>{% if profile.is_eligible %}Today{% else %}{{ profile.next_eligible_date|date:'j M Y' }}{% endif %}</dd>
+    </dl>
+    <p class="panel-note">
+      Eligibility follows the {{ DONATION_INTERVAL_DAYS }}-day rule and is kept up to date by the
+      system. It cannot be edited here.
+    </p>
+  </aside>
+</div>
+{% endblock %}

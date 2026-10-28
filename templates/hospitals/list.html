@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load icons %}
+{% block title %}Hospital directory{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>Hospital directory</h1>
+  <p class="lede">Hospitals registered with BDMIS, and which of them run a blood bank.</p>
+</header>
+
+<form class="filter-bar" method="get" role="search" data-autosubmit>
+  <div class="form-group">
+    <label for="q">Search</label>
+    <input type="search" id="q" name="q" value="{{ query }}" placeholder="Hospital name">
+  </div>
+  <div class="form-group">
+    <label for="city">City</label>
+    <select id="city" name="city">
+      <option value="">All cities</option>
+      {% for city in cities %}
+        <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="state">State</label>
+    <select id="state" name="state">
+      <option value="">All states</option>
+      {% for state in states %}
+        <option value="{{ state }}" {% if state == selected_state %}selected{% endif %}>{{ state }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group form-group-check">
+    <div class="form-check">
+      <input type="checkbox" id="blood_bank" name="blood_bank" value="1" {% if blood_bank_only %}checked{% endif %}>
+      <label for="blood_bank">Blood bank only</label>
+    </div>
+  </div>
+  <div class="filter-actions">
+    <button class="btn btn-secondary" type="submit">{% icon "magnifying-glass" %} Search</button>
+    <a class="btn btn-ghost" href="{% url 'hospitals:list' %}">Clear</a>
+  </div>
+</form>
+
+{% if hospitals %}
+  <div class="hospital-grid">
+    {% for hospital in hospitals %}
+      <article class="hospital-card fade-in-on-load">
+        <div class="hospital-card-head">
+          <div>
+            <h2><a href="{{ hospital.get_absolute_url }}">{{ hospital.name }}</a></h2>
+            <p class="hospital-card-place">{{ hospital.city }}, {{ hospital.state }}</p>
+          </div>
+          {% if hospital.has_blood_bank %}
+            <span class="badge badge-outline">{% icon "drop" %} Blood bank</span>
+          {% else %}
+            <span class="badge badge-neutral">No blood bank</span>
+          {% endif %}
+        </div>
+
+        <ul class="contact-list">
+          <li>{% icon "map-pin" %}<span>{{ hospital.address }}</span></li>
+          {% if hospital.phone_number %}<li>{% icon "phone" %}<a href="tel:{{ hospital.phone_number }}">{{ hospital.phone_number }}</a></li>{% endif %}
+          {% if hospital.email %}<li>{% icon "envelope-simple" %}<a href="mailto:{{ hospital.email }}">{{ hospital.email }}</a></li>{% endif %}
+        </ul>
+
+        {% if hospital.has_blood_bank %}
+          <div class="capacity">
+            <div class="capacity-figures">
+              <span><strong>{{ hospital.total_units }}</strong> of {{ hospital.blood_bank_capacity }} units held</span>
+              <span>{{ hospital.capacity_percentage }}%</span>
+            </div>
+            <div class="meter" role="img" aria-label="{{ hospital.capacity_percentage }}% of capacity">
+              <div class="meter-fill" style="width: {{ hospital.capacity_percentage }}%"></div>
+            </div>
+          </div>
+          <div class="hospital-card-foot">
+            {% with short=hospital.shortage_types %}
+              {% if short %}
+                <span class="badge badge-red">{% icon "warning" %} {{ short|length }} type{{ short|length|pluralize }} critical</span>
+              {% else %}
+                <span class="badge badge-green">{% icon "check-circle" %} Stock healthy</span>
+              {% endif %}
+            {% endwith %}
+            <a class="link-arrow small" href="{% url 'hospitals:inventory' hospital.pk %}">Live inventory {% icon "arrow-right" %}</a>
+          </div>
+        {% else %}
+          <div class="hospital-card-foot">
+            <span class="small muted">Donations go to a partner blood bank.</span>
+            <a class="link-arrow small" href="{{ hospital.get_absolute_url }}">Details {% icon "arrow-right" %}</a>
+          </div>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{% icon "hospital" %}</div>
+    <h2>No hospitals match those filters</h2>
+    <p>Try a different city or state, or clear the search to see every hospital.</p>
+    <a class="btn btn-secondary" href="{% url 'hospitals:list' %}">Clear filters</a>
+  </div>
+{% endif %}
+{% endblock %}

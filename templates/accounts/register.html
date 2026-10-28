@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load icons %}
+{% block title %}Become a donor{% endblock %}
+
+{% block content %}
+<div class="auth">
+  {% include 'accounts/_auth_media.html' %}
+
+  <div class="auth-main">
+    <header class="page-head">
+      <h1>Become a donor</h1>
+      <p class="lede">Two minutes to register. There is no approval queue: your account is active immediately.</p>
+    </header>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-red" role="alert">
+        {% icon "warning" %}
+        <div>{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+      </div>
+    {% endif %}
+
+    <form class="form form-wide" method="post" novalidate>
+      {% csrf_token %}
+
+      <fieldset class="form-section">
+        <legend class="form-section-title">About you</legend>
+        {% include 'core/_form_field.html' with field=form.full_name %}
+        <div class="form-row">
+          {% include 'core/_form_field.html' with field=form.username %}
+          {% include 'core/_form_field.html' with field=form.email %}
+        </div>
+        <div class="form-row">
+          {% include 'core/_form_field.html' with field=form.password1 %}
+          {% include 'core/_form_field.html' with field=form.password2 %}
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend class="form-section-title">Your blood</legend>
+        <div class="form-row">
+          {% include 'core/_form_field.html' with field=form.blood_group %}
+          {% include 'core/_form_field.html' with field=form.rhesus_factor %}
+          {% include 'core/_form_field.html' with field=form.date_of_birth %}
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend class="form-section-title">Where to reach you</legend>
+        <div class="form-row">
+          {% include 'core/_form_field.html' with field=form.phone_number %}
+          {% include 'core/_form_field.html' with field=form.city %}
+          {% include 'core/_form_field.html' with field=form.state %}
+        </div>
+        {% include 'core/_form_field.html' with field=form.address %}
+      </fieldset>
+
+      <div class="form-actions">
+        <button class="btn btn-primary btn-lg btn-responsive" type="submit" data-loading-label="Creating your account…">Create my donor account</button>
+        <span class="muted small">Already registered? <a href="{% url 'accounts:login' %}">Sign in</a></span>
+      </div>
+    </form>
+
+    <p class="tiny muted mt-32">
+      We email you only when a nearby hospital needs your blood type. Read the
+      <a href="{% url 'core:criteria' %}">donation criteria</a> to check you are eligible to give.
+    </p>
+  </div>
+</div>
+{% endblock %}

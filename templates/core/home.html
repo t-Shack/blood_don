@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load humanize static icons ui %}
+
+{% block title %}Give blood where it is needed{% endblock %}
+{% block main_class %}main-flush{% endblock %}
+
+{% block extra_head %}
+<link rel="preload" as="image" type="image/webp"
+      imagesrcset="{% static 'img/donor-arm-800.webp' %} 800w, {% static 'img/donor-arm-1280.webp' %} 1280w, {% static 'img/donor-arm-2400.webp' %} 2400w"
+      imagesizes="100vw">
+{% endblock %}
+
+{% block main %}
+<section class="stage" aria-labelledby="stage-title">
+  <picture class="stage-media">
+    <source type="image/webp" sizes="100vw"
+            srcset="{% static 'img/donor-arm-800.webp' %} 800w, {% static 'img/donor-arm-1280.webp' %} 1280w, {% static 'img/donor-arm-2400.webp' %} 2400w">
+    <img src="{% static 'img/donor-arm-1600.jpg' %}" width="1600" height="1068" fetchpriority="high"
+         alt="A health worker in surgical gloves prepares a donor's arm on a red donation chair.">
+  </picture>
+
+  <div class="container stage-body">
+    <div class="fade-in">
+      <h1 class="display" id="stage-title">Someone near you needs the blood type you carry.</h1>
+      <p class="stage-lede">Register once. We email you only when a hospital near you is short of blood you can give.</p>
+      <div class="stage-actions">
+        {% if not user.is_authenticated %}
+          <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Become a donor</a>
+        {% elif user.is_donor %}
+          <a class="btn btn-primary btn-lg" href="{% url 'accounts:dashboard' %}">Open your dashboard</a>
+        {% else %}
+          <a class="btn btn-primary btn-lg" href="{% url 'requests:list' %}">Blood requests</a>
+        {% endif %}
+        <a class="btn btn-on-dark btn-lg" href="{% url 'inventory:overview' %}">See live inventory</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="live" aria-labelledby="live-title" data-shortage-url="{% url 'api:hospitals_in_shortage' %}">
+  <div class="container">
+    <div class="live-head">
+      <div>
+        <h2 id="live-title">Short right now</h2>
+        <p class="live-meta">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span>Hospitals below a critical threshold: <strong data-shortage-count>{{ shortage_hospitals }}</strong></span>
+        </p>
+      </div>
+      <a class="link-arrow" href="{% url 'inventory:overview' %}">See live inventory {% icon "arrow-right" %}</a>
+    </div>
+
+    {% if shortages %}
+      <ul class="live-grid">
+        {% for item in shortages %}
+          <li>
+            <a class="live-item" href="{% url 'hospitals:inventory' item.hospital.pk %}">
+              <span class="live-type">{{ item.full_blood_type|rh }}</span>
+              <span class="live-units">{{ item.available_units }} unit{{ item.available_units|pluralize }} left</span>
+              <span class="live-hosp">{{ item.hospital.name }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      {% if shortage_total > 8 %}
+        <p class="live-more">Showing 8 of {{ shortage_total }} blood-type shortages.</p>
+      {% endif %}
+    {% else %}
+      <p class="live-calm">Every blood bank on BDMIS is above its critical thresholds right now. That is good news, and it can change in an afternoon.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="metrics" aria-label="BDMIS in figures">
+  <div class="container">
+    <dl class="metrics-grid">
+      <div class="metric"><dt>Hospitals with blood banks</dt><dd>{{ stats.hospitals|intcomma }}</dd></div>
+      <div class="metric"><dt>Registered donors</dt><dd>{{ stats.donors|intcomma }}</dd></div>
+      <div class="metric"><dt>Units on the shelf right now</dt><dd>{{ stats.units_available|intcomma }}</dd></div>
+      <div class="metric"><dt>Units donated through BDMIS</dt><dd>{{ stats.donations|intcomma }}</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="how" aria-labelledby="how-title">
+  <div class="container how-grid">
+    <figure class="how-media">
+      <picture>
+        <source type="image/webp" sizes="(max-width: 900px) 100vw, 40vw"
+                srcset="{% static 'img/hospital-corridor-640.webp' %} 640w, {% static 'img/hospital-corridor-1100.webp' %} 1100w">
+        <img src="{% static 'img/hospital-corridor-900.jpg' %}" width="900" height="1125" loading="lazy"
+             alt="Two nurses in scrubs pass each other in a hospital corridor in Lagos.">
+      </picture>
+    </figure>
+
+    <div class="how-copy">
+      <h2 id="how-title">How BDMIS works</h2>
+      <p class="lede">No paperwork and no cost. You register once, and the system does the matching.</p>
+      <ol class="steps">
+        <li>
+          <h3>Register your blood type</h3>
+          <p>Tell us your ABO group and rhesus factor. We work out every patient you are compatible with.</p>
+        </li>
+        <li>
+          <h3>Get an alert when it matters</h3>
+          <p>When a hospital runs short of blood you can give, you get one email with the hospital, the urgency and the units needed.</p>
+        </li>
+        <li>
+          <h3>Donate, and we count the days</h3>
+          <p>After you give, BDMIS holds you out for {{ DONATION_INTERVAL_DAYS }} days and shows the exact date you can donate again.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="eligibility" aria-labelledby="elig-title">
+  <div class="container elig-grid">
+    <div class="elig-intro">
+      <h2 id="elig-title">Can you donate?</h2>
+      <p class="lede">Most healthy adults aged 18 to 65 can. The blood bank screens everyone on the day.</p>
+      <p class="numeral" aria-hidden="true">{{ DONATION_INTERVAL_DAYS }}</p>
+      <p class="numeral-caption"><span class="visually-hidden">{{ DONATION_INTERVAL_DAYS }}</span> days between whole-blood donations. BDMIS tracks your next eligible date for you.</p>
+    </div>
+
+    <div>
+      {% if criteria_preview %}
+        <ul class="elig-list">
+          {% for item in criteria_preview %}
+            <li class="elig-row">
+              <h3>{{ item.title }}</h3>
+              <ul class="criteria-list">
+                {% for point in item.points|slice:':3' %}<li>{{ point }}</li>{% endfor %}
+              </ul>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <p class="elig-foot"><a class="link-arrow" href="{% url 'core:criteria' %}">Read the donation criteria {% icon "arrow-right" %}</a></p>
+    </div>
+  </div>
+</section>
+
+{% if featured_hospitals %}
+<section class="directory" aria-labelledby="dir-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="dir-title">Blood banks on BDMIS</h2>
+      <a class="link-arrow" href="{% url 'hospitals:list' %}">View all hospitals {% icon "arrow-right" %}</a>
+    </div>
+    <ul class="dir-list">
+      {% for hospital in featured_hospitals %}
+        {% with short=hospital.shortage_types %}
+          <li>
+            <a class="dir-row" href="{{ hospital.get_absolute_url }}">
+              <span class="dir-name">{{ hospital.name }}<span class="dir-place">{{ hospital.city }}, {{ hospital.state }}</span></span>
+              <span class="dir-stock"><strong>{{ hospital.total_units }}</strong>units held</span>
+              <span class="dir-status">
+                {% if short %}
+                  <span class="badge badge-red">{% icon "warning" %} Short of {{ short|join:", "|rh }}</span>
+                {% else %}
+                  <span class="badge badge-green">{% icon "check-circle" %} Stock healthy</span>
+                {% endif %}
+              </span>
+              <span class="dir-arrow" aria-hidden="true">{% icon "arrow-right" %}</span>
+            </a>
+          </li>
+        {% endwith %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+<section class="closing" aria-labelledby="closing-title">
+  <div class="container closing-inner">
+    <h2 class="closing-statement" id="closing-title">One donation can help up to three patients.</h2>
+    <div class="closing-aside">
+      <p>Donated blood is separated into red cells, plasma and platelets, and each part can go to a different patient.</p>
+      {% if not user.is_authenticated %}
+        <a class="btn btn-inverse btn-lg" href="{% url 'accounts:register' %}">Become a donor</a>
+      {% elif user.is_donor %}
+        <a class="btn btn-inverse btn-lg" href="{% url 'accounts:dashboard' %}">Open your dashboard</a>
+      {% else %}
+        <a class="btn btn-inverse btn-lg" href="{% url 'requests:list' %}">Blood requests</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notifications.js' %}"></script>
+{% endblock %}

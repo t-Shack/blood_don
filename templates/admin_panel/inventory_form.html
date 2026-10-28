@@ -1,0 +1,46 @@
+{% extends 'admin_panel/_base.html' %}
+{% load icons ui %}
+{% block admin_title %}{{ hospital.name }} inventory{% endblock %}
+
+{% block admin_content %}
+<header class="page-head">
+  <a class="back-link" href="{% url 'core:admin_hospitals' %}">{% icon "arrow-left" %} Hospitals</a>
+  <h1>Inventory at {{ hospital.name }}</h1>
+  <p class="lede">
+    Set the units held and the critical threshold for each blood type. Anything below its
+    threshold shows publicly as a shortage and triggers donor alerts on the next request.
+  </p>
+</header>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ formset.management_form }}
+  <div class="table-wrap">
+    <table class="table inventory-form-table">
+      <thead><tr><th scope="col">Blood type</th><th scope="col">Units available</th><th scope="col">Critical threshold</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        {% for form, item in rows %}
+          <tr>
+            <td><span class="blood-badge">{{ item.full_blood_type|rh }}</span>{{ form.id }}</td>
+            <td>
+              {{ form.available_units }}
+              {% for error in form.available_units.errors %}<p class="field-error">{% icon "warning" %}<span>{{ error }}</span></p>{% endfor %}
+            </td>
+            <td>
+              {{ form.critical_threshold }}
+              {% for error in form.critical_threshold.errors %}<p class="field-error">{% icon "warning" %}<span>{{ error }}</span></p>{% endfor %}
+            </td>
+            <td>
+              <span class="badge {% if item.status == 'critical' %}badge-red{% elif item.status == 'low' %}badge-amber{% else %}badge-green{% endif %}">{{ item.status_label }}</span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary btn-responsive" type="submit" data-loading-label="Saving…">Save inventory</button>
+    <a class="btn btn-secondary btn-responsive" href="{% url 'hospitals:inventory' hospital.pk %}">View public page</a>
+  </div>
+</form>
+{% endblock %}

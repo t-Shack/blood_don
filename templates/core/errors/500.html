@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Something went wrong{% endblock %}
+{% block content %}
+<div class="error-page">
+  <p class="error-code" aria-hidden="true">500</p>
+  <div>
+    <h1>Something went wrong on our side</h1>
+    <p class="lede">The error has been logged. Please try again in a moment.</p>
+    <div class="cluster">
+      <a class="btn btn-primary" href="{% url 'core:home' %}">Back to the homepage</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
