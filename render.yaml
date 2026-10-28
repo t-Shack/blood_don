@@ -12,11 +12,11 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.7"
       - key: DJANGO_SETTINGS_MODULE
-        value: bdmis.settings.production
+        value: bdmis.settings.development
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: "False"
+        value: "True"
       - key: ALLOWED_HOSTS
         sync: false
       - key: SITE_URL
@@ -49,7 +49,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.7"
       - key: DJANGO_SETTINGS_MODULE
-        value: bdmis.settings.production
+        value: bdmis.settings.development
       - key: SECRET_KEY
         sync: false
       - key: ALLOWED_HOSTS
